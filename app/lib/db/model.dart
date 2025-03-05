@@ -3,6 +3,7 @@ class Emp {
   final String name;
   final int age;
   final String email;
+  final String status;
   final double weight;
   final double height;
 
@@ -11,6 +12,7 @@ class Emp {
     required this.name,
     required this.age,
     required this.email,
+    required this.status,
     required this.weight,
     required this.height,
   });
@@ -21,6 +23,7 @@ class Emp {
       name: json['name'],
       age: json['age'],
       email: json['email'],
+      status: json['status'],
       weight:
           json['weight'] is int ? json['weight'].toDouble() : json['weight'],
       height:
@@ -34,6 +37,7 @@ class Emp {
       'name': name,
       'age': age,
       'email': email,
+      'status': status,
       'weight': weight,
       'height': height,
     };
@@ -41,6 +45,6 @@ class Emp {
 
   @override
   String toString() {
-    return 'Emp{id: $id, name: $name, age: $age, email: $email, weight: $weight, height: $height}';
+    return 'Emp{id: $id, name: $name, age: $age, email: $email, status: $status, weight: $weight, height: $height}';
   }
 }

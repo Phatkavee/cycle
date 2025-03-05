@@ -37,11 +37,12 @@ def create_emp():
         _email = _json['email']
         _weight = _json['weight']
         _height = _json['height']
-        if _name and _email and _weight and _height and request.method == 'POST':
+        _status = _json['status']
+        if _name and _email and _weight and _height and _status and request.method == 'POST':
             conn = mysql.connect()
             cursor = conn.cursor(pymysql.cursors.DictCursor)
-            sqlQuery = "INSERT INTO emp2(name, email, weight, height) VALUES(%s, %s, %s, %s)"
-            bindData = (_name, _email, _weight, _height)            
+            sqlQuery = "INSERT INTO emp2(name, email, weight, height, status) VALUES(%s, %s, %s, %s, %s)"
+            bindData = (_name, _email, _weight, _height, _status)            
             cursor.execute(sqlQuery, bindData)
             conn.commit()
             respone = jsonify('Employee added successfully!')
@@ -64,7 +65,7 @@ def emp():
     try:
         conn = mysql.connect()
         cursor = conn.cursor(pymysql.cursors.DictCursor)
-        cursor.execute("SELECT id, name, email, weight, height FROM emp2")
+        cursor.execute("SELECT id, name, email, weight, height, status FROM emp2")
         empRows = cursor.fetchall()
         respone = jsonify(empRows)
         respone.status_code = 200
@@ -82,7 +83,7 @@ def emp_details(emp_id):
     try:
         conn = mysql.connect()
         cursor = conn.cursor(pymysql.cursors.DictCursor)
-        cursor.execute("SELECT id, name, email, weight, height FROM emp2 WHERE id =%s", emp_id)
+        cursor.execute("SELECT id, name, email, weight, height, status FROM emp2 WHERE id =%s", emp_id)
         empRow = cursor.fetchone()
         respone = jsonify(empRow)
         respone.status_code = 200
@@ -99,14 +100,15 @@ def emp_details(emp_id):
 def update_emp(emp_id):
     try:
         _json = request.json
-        #_id = _json['id']
+        # _id = _json['id']
         _name = _json['name']
         _email = _json['email']
         _weight = _json['weight']
         _height = _json['height']
-        if _name and _email and _weight and _height and emp_id and request.method == 'PUT':
-            sqlQuery = "UPDATE emp2 SET name=%s, email=%s, weight=%s, height=%s WHERE id=%s"
-            bindData = (_name, _email, _weight, _height, emp_id,)
+        _status = _json['status']
+        if _name and _email and _weight and _height and _status and emp_id and request.method == 'PUT':
+            sqlQuery = "UPDATE emp2 SET name=%s, email=%s, weight=%s, height=%s, status=%s WHERE id=%s"
+            bindData = (_name, _email, _weight, _height, _status, emp_id,)
             conn = mysql.connect()
             cursor = conn.cursor()
             cursor.execute(sqlQuery, bindData)
@@ -145,4 +147,5 @@ def delete_emp(emp_id):
 if __name__ == '__main__':
     from werkzeug.serving import run_simple
     app.debug = True
-    run_simple('localhost', 5000, app) # change port number
+    run_simple('127.0.0.1', 3000, app) # change port number
+    

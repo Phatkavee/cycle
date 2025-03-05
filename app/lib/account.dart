@@ -1,4 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:mysql1/mysql1.dart';
+
+Future<void> saveUserData(String name, int age, String email, String status, double weight, double height) async {
+  var conn = await MySqlConnection.connect(ConnectionSettings(
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: '',
+    db: 'emp'
+  ));
+
+  await conn.query(
+    'INSERT INTO emp (name, age, email, status, weight, height) VALUES (?, ?, ?, ?, ?, ?)', 
+    [name, age, email, status, weight, height]
+  );
+  await conn.close();
+}
 
 class AccountPage extends StatefulWidget {
   @override
@@ -10,8 +27,6 @@ class _AccountPageState extends State<AccountPage> {
   int _age = 18;
   String _email = "";
   String _status = "โสด";
-  String _medicalCondition = "ไม่มี";
-  bool _cycleReminderEnabled = true;
   double _weight = 50.0;
   double _height = 160.0;
 
@@ -95,22 +110,21 @@ class _AccountPageState extends State<AccountPage> {
                   });
                 },
               ),
-              SizedBox(height: 10),
-              Text("โรคประจำตัว:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              TextField(
-                decoration: InputDecoration(hintText: "เช่น เบาหวาน, ความดัน ฯลฯ"),
-                onChanged: (value) {
-                  setState(() {
-                    _medicalCondition = value;
-                  });
-                },
-              ),
               SizedBox(height: 20),
+         
               ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("บันทึกข้อมูลสำเร็จ!")),
-                  );
+                onPressed: () async {
+                  print("กำลังบันทึกข้อมูล: $_name, $_age, $_email, $_status, $_weight, $_height");
+                  try {
+                    await saveUserData(_name, _age, _email, _status, _weight, _height);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("บันทึกข้อมูลสำเร็จ!")),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("เกิดข้อผิดพลาด: $e")),
+                    );
+                  }
                 },
                 child: Center(
                   child: Text("บันทึก")
@@ -123,4 +137,3 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 }
-
