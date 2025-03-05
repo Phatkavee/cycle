@@ -147,5 +147,5 @@ def delete_emp(emp_id):
 if __name__ == '__main__':
     from werkzeug.serving import run_simple
     app.debug = True
-    run_simple('127.0.0.1', 3000, app) # change port number
+    run_simple('localhost', 3000, app) # change port number
     
