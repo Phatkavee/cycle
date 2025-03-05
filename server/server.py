@@ -1,151 +1,142 @@
 import pymysql
-from werkzeug.wrappers import Request, Response
-from flask import flash, render_template, request
-from flask import jsonify
-from flask import Flask
+from flask import Flask, request, jsonify
 from flaskext.mysql import MySQL
 
 app = Flask(__name__)
+
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = ''
-app.config['MYSQL_DATABASE_DB'] = 'emp'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
+app.config['MYSQL_DATABASE_DB'] = 'cycle'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
 @app.route("/")
-def hello():
+def home():
     return """
-    Flask API !<br>
-    <a href='/new_user'>add</a>insert new<br>
-    <a href='/emp'>emp</a>Show all<br>
-    <b>/create</b> Insert new Record<br>
-    <b>/emp/<id></b> get by ID<br>
-    <b>/update/<id></b> Edit info<br>
-    <b>/delete/<id></b> Delete by  ID<br>
+    <h2>Flask API (Cycle DB)</h2>
+    <p><a href='/cycle'>ดูข้อมูลทั้งหมด</a></p>
+    <p>Endpoints:</p>
+    <ul>
+        <li><b>GET</b> /cycle - ดูข้อมูลทั้งหมด</li>
+        <li><b>GET</b> /cycle/&lt;id&gt; - ดูข้อมูลตาม ID</li>
+        <li><b>POST</b> /create - เพิ่มข้อมูลใหม่</li>
+        <li><b>PUT</b> /update/&lt;id&gt; - อัปเดตข้อมูล</li>
+        <li><b>DELETE</b> /delete/&lt;id&gt; - ลบข้อมูล</li>
+    </ul>
     """
-# @app.route('/new_user')
-# def add_user_view():
-#     return render_template('add.html')
+
+@app.route('/cycle', methods=['GET'])
+def get_all_cycle():
+    try:
+        conn = mysql.connect()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("SELECT * FROM cycle")
+        data = cursor.fetchall()
+        return jsonify(data), 200
+    except Exception as e:
+        print(e)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close() 
+        if conn:
+            conn.close()
+
+@app.route('/cycle/<int:cycle_id>', methods=['GET'])
+def get_cycle_by_id(cycle_id):
+    try:
+        conn = mysql.connect()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("SELECT * FROM cycle WHERE id = %s", (cycle_id,))
+        data = cursor.fetchone()
+        if data:
+            return jsonify(data), 200
+        else:
+            return jsonify({'error': 'Record not found'}), 404
+    except Exception as e:
+        print(e)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close() 
+        if conn:
+            conn.close()
 
 @app.route('/create', methods=['POST'])
-def create_emp():
+def create_cycle():
     try:        
         _json = request.json
-        print(_json)
         _name = _json['name']
+        _age = _json['age']
         _email = _json['email']
+        _status = _json['status']
         _weight = _json['weight']
         _height = _json['height']
-        _status = _json['status']
-        if _name and _email and _weight and _height and _status and request.method == 'POST':
-            conn = mysql.connect()
-            cursor = conn.cursor(pymysql.cursors.DictCursor)
-            sqlQuery = "INSERT INTO emp2(name, email, weight, height, status) VALUES(%s, %s, %s, %s, %s)"
-            bindData = (_name, _email, _weight, _height, _status)            
-            cursor.execute(sqlQuery, bindData)
-            conn.commit()
-            respone = jsonify('Employee added successfully!')
-            respone.status_code = 200
-            #flash('User added successfully!')
-            #redirect('/')
-            return respone
-        else:
-            return showMessage()
-    except Exception as e:
-        print(e)
-    finally:
-        if cursor:
-            cursor.close() 
-        if conn:
-            conn.close()
         
-@app.route('/emp')
-def emp():
-    try:
-        conn = mysql.connect()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
-        cursor.execute("SELECT id, name, email, weight, height, status FROM emp2")
-        empRows = cursor.fetchall()
-        respone = jsonify(empRows)
-        respone.status_code = 200
-        return respone
-    except Exception as e:
-        print(e)
-    finally:
-        if cursor:
-            cursor.close() 
-        if conn:
-            conn.close() 
-
-@app.route('/emp/<int:emp_id>')
-def emp_details(emp_id):
-    try:
-        conn = mysql.connect()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
-        cursor.execute("SELECT id, name, email, weight, height, status FROM emp2 WHERE id =%s", emp_id)
-        empRow = cursor.fetchone()
-        respone = jsonify(empRow)
-        respone.status_code = 200
-        return respone
-    except Exception as e:
-        print(e)
-    finally:
-        if cursor:
-            cursor.close() 
-        if conn:
-            conn.close()
-
-@app.route('/update/<int:emp_id>', methods=['PUT'])
-def update_emp(emp_id):
-    try:
-        _json = request.json
-        # _id = _json['id']
-        _name = _json['name']
-        _email = _json['email']
-        _weight = _json['weight']
-        _height = _json['height']
-        _status = _json['status']
-        if _name and _email and _weight and _height and _status and emp_id and request.method == 'PUT':
-            sqlQuery = "UPDATE emp2 SET name=%s, email=%s, weight=%s, height=%s, status=%s WHERE id=%s"
-            bindData = (_name, _email, _weight, _height, _status, emp_id,)
+        if _name and _age and _email and _status and _weight and _height:
             conn = mysql.connect()
             cursor = conn.cursor()
-            cursor.execute(sqlQuery, bindData)
+            sqlQuery = "INSERT INTO cycle(name, age, email, status, weight, height) VALUES(%s, %s, %s, %s, %s, %s)"
+            cursor.execute(sqlQuery, (_name, _age, _email, _status, _weight, _height))
             conn.commit()
-            respone = jsonify('Employee updated successfully!')
-            respone.status_code = 200
-            return respone
+            return jsonify({'message': 'Record added successfully!'}), 201
         else:
-            return showMessage()
+            return jsonify({'error': 'Invalid input'}), 400
     except Exception as e:
         print(e)
+        return jsonify({'error': str(e)}), 500
     finally:
         if cursor:
             cursor.close() 
         if conn:
             conn.close()
 
-@app.route('/delete/<int:emp_id>', methods=['DELETE'])
-def delete_emp(emp_id):
+@app.route('/update/<int:cycle_id>', methods=['PUT'])
+def update_cycle(cycle_id):
+    try:
+        _json = request.json
+        _name = _json['name']
+        _age = _json['age']
+        _email = _json['email']
+        _status = _json['status']
+        _weight = _json['weight']
+        _height = _json['height']
+
+        if _name and _age and _email and _status and _weight and _height:
+            conn = mysql.connect()
+            cursor = conn.cursor()
+            sqlQuery = "UPDATE cycle SET name=%s, age=%s, email=%s, status=%s, weight=%s, height=%s WHERE id=%s"
+            cursor.execute(sqlQuery, (_name, _age, _email, _status, _weight, _height, cycle_id))
+            conn.commit()
+            return jsonify({'message': 'Record updated successfully!'}), 200
+        else:
+            return jsonify({'error': 'Invalid input'}), 400
+    except Exception as e:
+        print(e)
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close() 
+        if conn:
+            conn.close()
+
+@app.route('/delete/<int:cycle_id>', methods=['DELETE'])
+def delete_cycle(cycle_id):
     try:
         conn = mysql.connect()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM emp2 WHERE id =%s", (emp_id,))
+        cursor.execute("DELETE FROM cycle WHERE id = %s", (cycle_id,))
         conn.commit()
-        respone = jsonify('Employee deleted successfully!')
-        respone.status_code = 200
-        return respone
+        return jsonify({'message': 'Record deleted successfully!'}), 204
     except Exception as e:
         print(e)
+        return jsonify({'error': str(e)}), 500
     finally:
         if cursor:
             cursor.close() 
         if conn:
-            conn.close()      
+            conn.close()
 
 if __name__ == '__main__':
-    from werkzeug.serving import run_simple
-    app.debug = True
-    run_simple('localhost', 3000, app) # change port number
-    
+    app.run(host='localhost', port=3000, debug=True)

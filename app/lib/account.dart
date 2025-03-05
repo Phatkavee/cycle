@@ -1,36 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:mysql1/mysql1.dart';
 
-import 'package:mysql1/mysql1.dart';
-
-Future<void> saveUserData() async {
-  var conn = await MySqlConnection.connect(ConnectionSettings(
-    host: 'localhost', 
-    port: 3306,
-    user: 'youruser',
-    password: 'yourpassword',
-    db: 'cycleapp'
-  ));
-
-  await conn.query(
-    'INSERT INTO users (name, age, email, status, medical_condition, weight, height) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [_name, _age, _email, _status, _medicalCondition, _weight, _height]
-  );
-
-  await conn.close();
-}
-
 Future<void> saveUserData(String name, int age, String email, String status, double weight, double height) async {
   var conn = await MySqlConnection.connect(ConnectionSettings(
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: '',
-    db: 'emp'
+    password: 'root',
+    db: 'cycle'
   ));
 
   await conn.query(
-    'INSERT INTO emp (name, age, email, status, weight, height) VALUES (?, ?, ?, ?, ?, ?)', 
+    'INSERT INTO cycle (name, age, email, status, weight, height) VALUES (?, ?, ?, ?, ?, ?)', 
     [name, age, email, status, weight, height]
   );
   await conn.close();
